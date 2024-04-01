@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Exclude the root data folder
+/data/
+
+# Include the data folder inside src
+!/src/data/
+
 # Distribution / packaging
 .Python
 build/
