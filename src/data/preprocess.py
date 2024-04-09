@@ -1,15 +1,30 @@
-# data/preprocess.py
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import KNNImputer
-from typing import List
+from typing import List, Optional
 
 class DataPreprocessor:
-    def __init__(self, df):
+    """
+    Provides a series of data cleaning, preprocessing, and feature engineering methods for a pandas DataFrame.
+    """
+    def __init__(self, df: pd.DataFrame):
+        """
+        Initializes the DataPreprocessor with a DataFrame.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to preprocess.
+        """
+
         assert isinstance(df, pd.DataFrame), "Input must be a pandas DataFrame"
         self.df = df
 
-    def clean_trial_ids(self):
+    def clean_trial_ids(self) -> 'DataPreprocessor':
+        """
+        Cleans 'trial_id' column by removing prefixes and converting to integer.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         assert 'trial_id' in self.df.columns, "'trial_id' column is missing"
         
         self.df['trial_id'] = self.df['trial_id'].str.replace('trial_', '').astype(int)
@@ -18,7 +33,13 @@ class DataPreprocessor:
         assert self.df['trial_id'].dtype == 'int', "'trial_id' is not an integer after cleaning"
         return self
     
-    def clean_site_ids(self):
+    def clean_site_ids(self) -> 'DataPreprocessor':
+        """
+        Cleans 'site_id' column by removing prefixes and converting to integer.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         assert 'site_id' in self.df.columns, "'site_id' column is missing"
         
         self.df['site_id'] = self.df['site_id'].str.replace('site_', '').astype(int)
@@ -27,7 +48,13 @@ class DataPreprocessor:
         assert self.df['site_id'].dtype == 'int', "'site_id' is not an integer after cleaning"
         return self
 
-    def clean_dates(self):
+    def clean_dates(self) -> 'DataPreprocessor':
+        """
+        Converts 'site_start_date' and 'site_end_date' to datetime objects.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         assert 'site_start_date' in self.df.columns, "'site_start_date' column is missing"
         assert 'site_end_date' in self.df.columns, "'site_end_date' column is missing"
 
@@ -41,7 +68,13 @@ class DataPreprocessor:
             "'site_end_date' is not datetime type after cleaning"
         return self
     
-    def clean_ages(self):
+    def clean_ages(self) -> 'DataPreprocessor':
+        """
+        Cleans 'maximum_age' and 'minimum_age' by replacing 0 with the max age and ensuring max is greater than min.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         # Whenever maximum_age is 0, set maximum_age to the max of the column self.df["maximum_age"].
         self.df['maximum_age'] = self.df['maximum_age'].replace(0, self.df['maximum_age'].max())
         assert self.df['maximum_age'].min() > 0, "Maximum age contains zero or negative values"
@@ -50,7 +83,13 @@ class DataPreprocessor:
 
         return self
     
-    def impute_mean(self):
+    def impute_mean(self) -> 'DataPreprocessor':
+        """
+        Imputes missing values in specified columns with the mean of the column.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         # Impute missing variables in the following columns with means of the corresponding columns in the dataset.
         columns_to_impute = \
             ["population", "oecd_pharma_expenditure_per_capita", "oecd_medical_grads_per_1k", "oecd_MDs_per_1k", 
@@ -63,7 +102,17 @@ class DataPreprocessor:
         assert not self.df[columns_to_impute].isnull().any().any(), "Mean imputation failed"
         return self
     
-    def impute_knn(self, columns: List[str] = None, k=10):
+    def impute_knn(self, columns: Optional[List[str]] = None, k: int = 10) -> 'DataPreprocessor':
+        """
+        Imputes missing values using k-Nearest Neighbors for the specified columns.
+
+        Args:
+            columns (Optional[List[str]]): Columns to impute. Imputes all columns if None.
+            k (int): Number of neighbors for KNN imputation.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         if columns is None:
             columns = self.df.columns
         # Assert that all columns to be imputed exist in the DataFrame.
@@ -80,7 +129,13 @@ class DataPreprocessor:
         
         return self
 
-    def fill_missing_nn_region(self):
+    def fill_missing_nn_region(self) -> 'DataPreprocessor':
+        """
+        Fills missing 'nn_region' entries based on specific 'country_id' rules.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         self.df.loc[self.df["country_id"] == "GTM", "nn_region"] = "LATAM"
         self.df.loc[self.df["country_id"] == "PER", "nn_region"] = "LATAM"
 
@@ -89,7 +144,13 @@ class DataPreprocessor:
 
         return self
 
-    def drop_negative_enrolment_months(self):
+    def drop_negative_enrolment_months(self) -> 'DataPreprocessor':
+        """
+        Drops rows where 'enrolment_months' is negative.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         assert 'enrolment_months' in self.df.columns, "'enrolment_months' column is missing"
         initial_count = len(self.df)
         self.df = self.df.loc[~(self.df['enrolment_months'] < 0)]
@@ -99,7 +160,13 @@ class DataPreprocessor:
         assert final_count <= initial_count, "Number of rows increased after dropping negative 'enrolment_months'"
         return self
 
-    def drop_trials_with_complete_missing_data(self):
+    def drop_trials_with_complete_missing_data(self) -> 'DataPreprocessor':
+        """
+        Drops trials with 100% missing data in 'no_of_patients' or 'enrolment_months'.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         assert 'trial_id' in self.df.columns, "'trial_id' column is missing"
         initial_count = len(self.df)
         
@@ -119,15 +186,19 @@ class DataPreprocessor:
         # Ensure rows were dropped
         assert final_count <= initial_count, "Number of rows increased after dropping trials with complete missing data"
         return self
-    
-    def standardize(self, columns=None):
-        scaler = StandardScaler()
-        if columns is None:
-            columns = self.df.columns
-        self.df[columns] = scaler.fit_transform(self.df[columns])
-        return self
 
-    def standardize(self, columns: List[str] = None, indicator_vars: List[str] = None):
+    def standardize(self, columns: Optional[List[str]] = None, indicator_vars: Optional[List[str]] = None) \
+        -> 'DataPreprocessor':
+        """
+        Standardizes the specified columns, excluding indicator variables.
+
+        Args:
+            columns (Optional[List[str]]): Columns to standardize. Standardizes all columns if None.
+            indicator_vars (Optional[List[str]]): Indicator variables to exclude from standardization.
+
+        Returns:
+            DataPreprocessor: Returns self to allow for method chaining.
+        """
         scaler = StandardScaler()
         
         if columns is None:
@@ -148,6 +219,12 @@ class DataPreprocessor:
         
         return self
 
-    def get_preprocessed_data(self):
+    def get_preprocessed_data(self) -> pd.DataFrame:
+        """
+        Returns the preprocessed DataFrame.
+
+        Returns:
+            pd.DataFrame: The preprocessed DataFrame.
+        """
         assert not self.df.empty, "The cleaned DataFrame is empty"
         return self.df 

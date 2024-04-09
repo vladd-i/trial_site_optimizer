@@ -3,11 +3,26 @@ import pandas as pd
 import numpy as np
 
 class FeatureEngineer:
-    def __init__(self, df):
+    """
+    Provides a series of feature engineering methods for a pandas DataFrame.
+    """
+    def __init__(self, df: pd.DataFrame):
+        """
+        Initializes the FeatureEngineer with a DataFrame.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to engineer features for.
+        """
         assert isinstance(df, pd.DataFrame), "Input must be a pandas DataFrame"
         self.df = df
 
-    def calculate_site_trial_duration_months(self):
+    def calculate_site_trial_duration_months(self) -> 'FeatureEngineer':
+        """
+        Calculates the duration of each trial in months.
+
+        Returns:
+            FeatureEngineer: Returns self to allow for method chaining.
+        """
         assert 'site_end_date' in self.df.columns, "'site_end_date' column is missing"
         assert 'site_start_date' in self.df.columns, "'site_start_date' column is missing"
         
@@ -18,7 +33,13 @@ class FeatureEngineer:
         assert 'site_trial_duration_months' in self.df.columns, "Failed to calculate 'site_trial_duration_months'"
         return self
 
-    def calculate_no_of_trials(self):
+    def calculate_no_of_trials(self) -> 'FeatureEngineer':
+        """
+        Calculates the number of trials for each site.
+
+        Returns:
+            FeatureEngineer: Returns self to allow for method chaining.
+        """
         assert 'site_id' in self.df.columns, "'site_id' column is missing"
         
         site_trial_counts = self.df['site_id'].value_counts().rename('no_of_trials')
@@ -27,7 +48,13 @@ class FeatureEngineer:
         assert 'no_of_trials' in self.df.columns, "Failed to calculate 'no_of_trials'"
         return self
 
-    def calculate_patients_enroled_per_month(self):
+    def calculate_patients_enroled_per_month(self) -> 'FeatureEngineer':
+        """
+        Calculates the number of patients enrolled per month for each trial site.
+
+        Returns:
+            FeatureEngineer: Returns self to allow for method chaining.
+        """
         assert 'enrolment_months' in self.df.columns, "'enrolment_months' column is missing"
         assert 'no_of_patients' in self.df.columns, "'no_of_patients' column is missing"
         
@@ -40,7 +67,13 @@ class FeatureEngineer:
         assert 'patients_enroled_per_month' in self.df.columns, "Failed to calculate 'patients_enroled_per_month'"
         return self
 
-    def calculate_patients_treated_per_month(self):
+    def calculate_patients_treated_per_month(self) -> 'FeatureEngineer':
+        """
+        Calculates the number of patients treated per month for each trial site.
+
+        Returns:
+            FeatureEngineer: Returns self to allow for method chaining.
+        """
         assert 'no_of_patients' in self.df.columns, "'no_of_patients' column is missing"
         assert 'site_trial_duration_months' in self.df.columns, "'site_trial_duration_months' column is missing after calculation"
         
@@ -51,10 +84,17 @@ class FeatureEngineer:
         assert 'patients_treated_per_month' in self.df.columns, "Failed to calculate 'patients_treated_per_month'"
         return self
 
-    def one_hot_encode_variables(self):
-        columns_to_one_hot_encode = ['site_type', 'trial_phase', 'nn_region']
+    def one_hot_encode_variables(self, columns: list = ['site_type', 'trial_phase', 'nn_region']) -> 'FeatureEngineer':
+        """
+        Applies one-hot encoding to specified categorical variables.
 
-        for column in columns_to_one_hot_encode:
+        Args:
+            columns (list): List of column names to be one-hot encoded.
+
+        Returns:
+            FeatureEngineer: Returns self to allow for method chaining.
+        """
+        for column in columns:
             # Ensure the column exists.
             assert column in self.df.columns, f"'{column}' column is missing"
             
@@ -79,7 +119,14 @@ class FeatureEngineer:
 
         return self
 
-    def calculate_site_quality_score(self):
+    def calculate_site_quality_score(self) -> 'FeatureEngineer':
+        """
+        Calculates a composite site quality score based on equally weighted three metrics: no_of_patients, 
+        patients_enroled_per_month, patients_treated_per_month.
+
+        Returns:
+            FeatureEngineer: Returns self to allow for method chaining.
+        """
         assert 'no_of_patients' in self.df.columns \
             and 'patients_enroled_per_month' in self.df.columns \
                 and 'patients_treated_per_month' in self.df.columns, \
@@ -91,7 +138,13 @@ class FeatureEngineer:
         
         return self
     
-    def get_data(self):
+    def get_data(self) -> pd.DataFrame:
+        """
+        Returns the DataFrame with engineered features.
+
+        Returns:
+            pd.DataFrame: The DataFrame with added features.
+        """
         # Add an assertion to check that the DataFrame is not empty
         assert not self.df.empty, "The final DataFrame is empty"
         return self.df

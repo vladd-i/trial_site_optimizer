@@ -1,4 +1,4 @@
-# data/dataloader.py
+from typing import Dict, Tuple
 import pandas as pd
 import numpy as np
 from configs.config import DATA_PATH
@@ -6,10 +6,23 @@ from .preprocess import DataPreprocessor
 from .feature_engineer import FeatureEngineer
 
 class DataLoader:
+    """
+    DataLoader is responsible for loading, cleaning, and preparing data for model training and evaluation.
+    It handles data from various sources, merges them, and processes features for model input.
+    """
     def __init__(self):
+        """
+        Initializes DataLoader with predefined file names.
+        """
         self.file_names = ['country', 'trial_site', 'target', 'trial']
 
-    def load_and_clean_data(self):
+    def load_and_clean_data(self) -> Dict[str, pd.DataFrame]:
+        """
+        Loads data from parquet files, applies cleaning and preprocessing steps using DataPreprocessor.
+
+        Returns:
+            dict: A dictionary where keys are file names and values are preprocessed pandas DataFrames.
+        """
         data = {}
         for file_name in self.file_names:
             df = pd.read_parquet(f"{DATA_PATH}/{file_name}.parquet")
@@ -39,7 +52,16 @@ class DataLoader:
 
         return data
 
-    def merge_drop_data(self, data):
+    def merge_drop_data(self, data: Dict[str, pd.DataFrame]) -> pd.DataFrame:
+        """
+        Merges data from multiple sources into a single DataFrame and applies additional cleaning.
+
+        Args:
+            data (Dict[str, pd.DataFrame]): A dictionary with preprocessed data frames.
+
+        Returns:
+            pd.DataFrame: The merged and cleaned DataFrame.
+        """    
         # Set 'df_trial_site' as the base dataframe to preserve its indices.
         df_merged = data['trial_site'].copy()
 
@@ -56,7 +78,16 @@ class DataLoader:
 
         return df_dropped
 
-    def add_features(self, df):
+    def add_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Applies feature engineering to the given DataFrame.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to which feature engineering is applied.
+
+        Returns:
+            pd.DataFrame: The DataFrame with added features.
+        """
         feature_engineer = FeatureEngineer(df)
         df_with_features = (feature_engineer
                             .calculate_site_trial_duration_months()
@@ -66,7 +97,16 @@ class DataLoader:
 
         return df_with_features
 
-    def get_predictors_data(self, df):
+    def get_predictors_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Extracts and preprocesses predictor variables from the given DataFrame.
+
+        Args:
+            df (pd.DataFrame): The DataFrame from which predictors are extracted.
+
+        Returns:
+            pd.DataFrame: The DataFrame with predictor variables, scaled and imputed.
+        """
         # Define the base variables that are not one-hot-encoded.
         country_vars = ["population", "oecd_pharma_expenditure_per_capita",
                         "oecd_medical_grads_per_1k", "oecd_MDs_per_1k",
@@ -104,7 +144,16 @@ class DataLoader:
         return df_predictors_scaled_imputed
     
 
-    def get_response_data(self, df):
+    def get_response_data(self, df: pd.DataFrame) -> np.ndarray:
+        """
+        Extracts and processes the response variable from the given DataFrame.
+
+        Args:
+            df (pd.DataFrame): The DataFrame from which the response variable is extracted.
+
+        Returns:
+            np.ndarray: The processed response variable as an array.
+        """
         outcome_variables = ["no_of_patients", "enrolment_months", "site_trial_duration_months"]
 
         # Select only the outcome variables.
@@ -148,7 +197,13 @@ class DataLoader:
 
         return df_response.values
     
-    def get_data(self):
+    def get_data(self) -> Tuple[pd.DataFrame, np.ndarray]:
+        """
+        Prepares the predictors and response data for model training.
+
+        Returns:
+            Tuple[pd.DataFrame, np.ndarray]: The predictors as a DataFrame and the response variable as an array.
+        """
         data = self.load_and_clean_data()
         df = self.merge_drop_data(data)
         df_with_features = self.add_features(df)
@@ -162,7 +217,13 @@ class DataLoader:
 
         return X, y
 
-    def get_train_val_test_split(self):
+    def get_train_val_test_split(self) -> Tuple[pd.DataFrame, np.ndarray, pd.DataFrame, np.ndarray, pd.DataFrame, np.ndarray]:
+        """
+        Splits the data into training, validation, and test sets based on trial IDs.
+
+        Returns:
+            Tuple: Six elements consisting of training predictors, training response, validation predictors, validation response, test predictors, and test response.
+        """
         # Load and clean data to get a DataFrame with trial_id and site_end_date.
         data = self.load_and_clean_data()
         df_merged = self.merge_drop_data(data)
