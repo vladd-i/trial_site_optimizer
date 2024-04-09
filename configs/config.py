@@ -1,4 +1,4 @@
 # configs/config.py
 
 # Define the global data path variable
-DATA_PATH = '../data'
+DATA_PATH = 'data'
