@@ -11,37 +11,32 @@ trial_site_optimizer/
 │
 ├── notebooks/                       # Jupyter notebooks for data analysis and exploration
 │   ├── exploratory_data_analysis.ipynb
-│   └── feature_analysis.ipynb       # TODO
+│   ├── test_dataloader.ipynb
+│   └── modeling.ipynb               # TODO
 │
 ├── src/                             # Source code for the project
-│   ├── __init__.py                  # Makes src a Python module
+│   ├── __init__.py                  # TODO: Makes src a Python module
 │   │
 │   ├── data/                        # Scripts/modules for data loading and manipulation
-│   │   ├── __init__.py
-│   │   ├── data_loader.py
+│   │   ├── dataloader.py
 │   │   ├── preprocess.py
 │   │   └── feature_engineer.py
-│   │   │
-│   ├── models/                      # Model definitions and training scripts
-│   │
-│   └── utils/                       # Utility functions and classes
+│   │   
+│   └── models/                      # Model definitions and training scripts
+│       └── models.py
 │
-├── tests/                           # Test suite for the project
+├── tests/                           # TODO: Test suite for the project
 │   ├── __init__.py
 │   ├── test_data.py
-│   ├── test_features.py
 │   └── test_models.py
 │
 ├── configs/                         # Configuration files (e.g., for models, preprocessing)
 │   └── config.yaml
 │
-├── requirements.txt                 # Project dependencies
-├── setup.py                         # Setup script for installing the project module
+├── requirements.txt                 # TODO: Project dependencies
+├── setup.py                         # TODO: Setup script for installing the project module
 ├── .gitignore                       # Specifies intentionally untracked files to ignore
-├── README.md                        # Project overview, setup, and usage instructions
-└── .github/workflows/               # CI/CD pipeline definitions for GitHub Actions
-    ├── data_validation.yml          # Data validation workflow
-    └── model_training.yml           # Model training and evaluation workflow
+└── README.md                        # Project overview, setup, and usage instructions
 ```
 
 ## Setup and Installation
@@ -59,6 +54,10 @@ trial_site_optimizer/
 
 ## Usage
 
-- To perform exploratory data analysis, navigate to the `notebooks/` directory and open the Jupyter notebooks.
+- To inspect exploratory data analysis results, navigate to the `notebooks/` directory and open the Jupyter notebooks.
 
-- For running the model training scripts, ensure you are in the project root directory and execute #TODO
+- For running the model training scripts and seeing the resulting metrics, ensure you are in the project root directory 
+and execute:
+    ```
+    python3 -m src.models.models
+    ```
